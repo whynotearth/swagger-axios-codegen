@@ -12,6 +12,7 @@ export function getRequestParameters(params: IParameter[]) {
   let requestParameters = ''
   let requestFormData = ''
   let requestPathReplace = ''
+  let pathParameters: string[] = []
   let queryParameters: string[] = []
   let bodyParameters: string[] = []
   let imports: string[] = []
@@ -51,6 +52,7 @@ export function getRequestParameters(params: IParameter[]) {
       `
     } else if (p.in === 'path') {
       requestPathReplace += `url = url.replace('{${paramName}}',params['${paramName}']+'')\n`
+      pathParameters.push(paramName)
     } else if (p.in === 'query') {
       queryParameters.push(`'${paramName}':params['${paramName}']`)
     } else if (p.in === 'body') {
@@ -58,5 +60,5 @@ export function getRequestParameters(params: IParameter[]) {
       bodyParameters.push(body)
     }
   })
-  return { requestParameters, requestFormData, requestPathReplace, queryParameters, bodyParameters, imports }
+  return { requestParameters, requestFormData, requestPathReplace, pathParameters, queryParameters, bodyParameters, imports }
 }

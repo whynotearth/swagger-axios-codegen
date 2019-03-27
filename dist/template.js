@@ -1,13 +1,12 @@
-import camelcase = require("camelcase");
-import { IPropDef } from "./baseInterfaces";
-
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const camelcase = require("camelcase");
 /** 类模板 */
-export function classTemplate(name: string, props: IPropDef[], imports: string[]) {
-  return `
+function classTemplate(name, props, imports) {
+    return `
   ${imports.map(imp => {
-    return `import { ${imp} } from '../definitions/${imp}'\n`
-  }).join('')}
+        return `import { ${imp} } from '../definitions/${imp}'\n`;
+    }).join('')}
 
   export class ${name} {
 
@@ -19,59 +18,36 @@ export function classTemplate(name: string, props: IPropDef[], imports: string[]
       }
     }
   }
-  `
+  `;
 }
+exports.classTemplate = classTemplate;
 /** 类属性模板 */
-export function classPropsTemplate(name: string, type: string, description: string) {
-  return `
+function classPropsTemplate(name, type, description) {
+    return `
   /** ${description || ''} */
   ${name}:${type};
-  `
+  `;
 }
-
+exports.classPropsTemplate = classPropsTemplate;
 /** 类属性模板 */
-export function classConstructorTemplate(name: string) {
-  return `this['${name}'] = data['${name}'];\n`
+function classConstructorTemplate(name) {
+    return `this['${name}'] = data['${name}'];\n`;
 }
-
+exports.classConstructorTemplate = classConstructorTemplate;
 /** 枚举 */
-export function enumTemplate(name: string, enumString: string, prefix?: string) {
-  return `
+function enumTemplate(name, enumString, prefix) {
+    return `
   export enum ${name}{
     ${enumString}
   }
-  `
+  `;
 }
-
-interface IRequestSchema {
-  summary: string
-  parameters: string
-  responseType: string
-  method: string
-  contentType: string
-  path: string
-  pathReplace: string
-  parsedParameters: any
-  formData: string
-}
-
+exports.enumTemplate = enumTemplate;
 /** requestTemplate */
-export function requestTemplate(name: string, requestSchema: IRequestSchema, options: any) {
-  let {
-    summary = '',
-    parameters = '',
-    responseType = '',
-    method = '',
-    contentType = 'multipart/form-data',
-    path = '',
-    pathReplace = '',
-    parsedParameters = <any>{},
-    formData = ''
-  } = requestSchema
-
-  const { pathParameters = [], queryParameters = [], bodyParameters = [] } = parsedParameters
-
-  return `
+function requestTemplate(name, requestSchema, options) {
+    let { summary = '', parameters = '', responseType = '', method = '', contentType = 'multipart/form-data', path = '', pathReplace = '', parsedParameters = {}, formData = '' } = requestSchema;
+    const { pathParameters = [], queryParameters = [], bodyParameters = [] } = parsedParameters;
+    return `
 /**
  * ${summary || ''}
  */
@@ -85,21 +61,17 @@ ${options.useStaticMethod ? 'static' : ''} ${camelcase(name)}(${parameters}optio
     let url = '${path}'
     ${pathReplace}
     configs.url = url;
-    ${
-      pathParameters.length > 0 ? `
+    ${pathParameters.length > 0 ? `
       ${JSON.stringify(pathParameters)}.forEach(key => {
         params[key] = null
       })
-      `:''
-    }
+      ` : ''}
     ${parsedParameters && queryParameters.length > 0
-      ? 'configs.params = params'
-      : ''
-    }
+        ? 'configs.params = params'
+        : ''}
     let data = ${parsedParameters && bodyParameters.length > 0
-      ? '{' + bodyParameters.join(',') + '}'
-      : 'null'
-    }
+        ? '{' + bodyParameters.join(',') + '}'
+        : 'null'}
     ${contentType === 'multipart/form-data' ? formData : ''}
     configs.data = data;
     axios(configs).then(res => {
@@ -110,17 +82,17 @@ ${options.useStaticMethod ? 'static' : ''} ${camelcase(name)}(${parameters}optio
   });
 }`;
 }
-
+exports.requestTemplate = requestTemplate;
 /** serviceTemplate */
-export function serviceTemplate(name: string, body: string) {
-  return `
+function serviceTemplate(name, body) {
+    return `
   export class ${name} {
     ${body}
   }
-  `
+  `;
 }
-
-export const serviceHeader = `/** Generate by swagger-axios-codegen */
+exports.serviceTemplate = serviceTemplate;
+exports.serviceHeader = `/** Generate by swagger-axios-codegen */
 
 import axiosStatic, { AxiosPromise, AxiosInstance } from 'axios';
 export interface IRequestOptions {
@@ -148,9 +120,8 @@ export const serviceOptions: ServiceOptions = {
 function axios(configs: IRequestConfig): AxiosPromise {
   return serviceOptions.axios? serviceOptions.axios.request(configs) : axiosStatic(configs);
 }
-`
-
-export const customerServiceHeader = `/** Generate by swagger-axios-codegen */
+`;
+exports.customerServiceHeader = `/** Generate by swagger-axios-codegen */
 
 export interface IRequestOptions {
   headers?: any;
@@ -194,4 +165,4 @@ export const serviceOptions: ServiceOptions = {
 function axios(configs: IRequestConfig): IRequestPromise {
   return serviceOptions.axios && serviceOptions.axios.request(configs);
 }
-`
+`;
